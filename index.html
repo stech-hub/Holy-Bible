@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    ==========================================
+    OFFLINE HOLY BIBLE APPLICATION
+    Created By: Akin S. Sokpah
+    Country: Liberia 🇱🇷
+    License: Free for Gospel Use
+    ==========================================
+  -->
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Holy Bible | Offline Reading</title>
+
+  <!-- META -->
+  <meta name="description" content="Offline Holy Bible with Gold Theme, Dark & Light Mode. Created by Akin S. Sokpah from Liberia.">
+  <meta name="author" content="Akin S. Sokpah">
+
+  <!-- ICON (placeholder) -->
+  <link rel="icon" href="favicon.ico">
+
+  <!-- STYLES (we will split later) -->
+  <style>
+
+    /* ======================================
+       ROOT VARIABLES – GOLD THEME SYSTEM
+       ====================================== */
+
+    :root {
+      --gold-main: #d4af37;
+      --gold-soft: #f5d76e;
+      --gold-dark: #9c7c19;
+
+      --dark-bg-main: #050505;
+      --dark-bg-card: #0d0d0d;
+      --dark-text-main: #f5f5f5;
+      --dark-text-muted: #b3b3b3;
+
+      --light-bg-main: #fbf7ef;
+      --light-bg-card: #ffffff;
+      --light-text-main: #1a1a1a;
+      --light-text-muted: #555555;
+
+      --border-soft: rgba(212,175,55,0.25);
+      --radius-lg: 18px;
+      --radius-md: 12px;
+    }
+
+    /* ======================================
+       GLOBAL RESET
+       ====================================== */
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Georgia", "Times New Roman", serif;
+    }
+
+    body {
+      background: var(--dark-bg-main);
+      color: var(--dark-text-main);
+      min-height: 100vh;
+      transition: background 0.4s ease, color 0.4s ease;
+    }
+
+    body.light {
+      background: var(--light-bg-main);
+      color: var(--light-text-main);
+    }
+
+    /* ======================================
+       HEADER
+       ====================================== */
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 18px;
+      text-align: center;
+      background: linear-gradient(
+        180deg,
+        rgba(0,0,0,0.95),
+        rgba(5,5,5,0.95)
+      );
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    body.light header {
+      background: linear-gradient(
+        180deg,
+        #fffaf0,
+        #f3ecd9
+      );
+    }
+
+    header h1 {
+      font-size: 1.6rem;
+      letter-spacing: 2px;
+      color: var(--gold-main);
+    }
+
+    header p {
+      font-size: 0.85rem;
+      margin-top: 6px;
+      color: var(--dark-text-muted);
+    }
+
+    body.light header p {
+      color: var(--light-text-muted);
+    }
+
+    /* ======================================
+       MODE TOGGLE
+       ====================================== */
+
+    .mode-toggle {
+      position: absolute;
+      right: 18px;
+      top: 18px;
+      background: transparent;
+      border: 1px solid var(--gold-main);
+      color: var(--gold-main);
+      padding: 6px 10px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.75rem;
+    }
+
+    /* ======================================
+       SEARCH BAR
+       ====================================== */
+
+    .search-area {
+      padding: 16px;
+    }
+
+    .search-area input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-soft);
+      background: var(--dark-bg-card);
+      color: var(--dark-text-main);
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    body.light .search-area input {
+      background: var(--light-bg-card);
+      color: var(--light-text-main);
+    }
+
+    /* ======================================
+       BOOK GRID
+       ====================================== */
+
+    .book-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      padding: 16px;
+    }
+
+    .book {
+      background: linear-gradient(
+        145deg,
+        #0a0a0a,
+        #121212
+      );
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    body.light .book {
+      background: #ffffff;
+    }
+
+    .book:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 14px 40px rgba(0,0,0,0.4);
+    }
+
+    .book h3 {
+      font-size: 1rem;
+      color: var(--gold-soft);
+      margin-bottom: 6px;
+    }
+
+    .book span {
+      font-size: 0.75rem;
+      color: var(--dark-text-muted);
+    }
+
+    body.light .book span {
+      color: var(--light-text-muted);
+    }
+
+    /* ======================================
+       READER VIEW
+       ====================================== */
+
+    .reader {
+      margin: 18px;
+      padding: 22px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-soft);
+      background: var(--dark-bg-card);
+    }
+
+    body.light .reader {
+      background: var(--light-bg-card);
+    }
+
+    .reader h2 {
+      color: var(--gold-main);
+      margin-bottom: 12px;
+    }
+
+    .reader p {
+      line-height: 1.9;
+      font-size: 1.05rem;
+      text-align: justify;
+    }
+
+    /* ======================================
+       FOOTER
+       ====================================== */
+
+    footer {
+      text-align: center;
+      padding: 18px;
+      font-size: 0.75rem;
+      opacity: 0.8;
+    }
+
+    footer strong {
+      color: var(--gold-main);
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <button class="mode-toggle" onclick="toggleMode()">Dark / Light</button>
+    <h1>📖 HOLY BIBLE</h1>
+    <p>Offline Scripture Reading</p>
+  </header>
+
+  <!-- SEARCH -->
+  <div class="search-area">
+    <input type="text" placeholder="Search book, chapter, or verse (offline)">
+  </div>
+
+  <!-- BOOK LIST -->
+  <section class="book-grid">
+    <div class="book"><h3>Genesis</h3><span>Old Testament</span></div>
+    <div class="book"><h3>Exodus</h3><span>Old Testament</span></div>
+    <div class="book"><h3>Psalms</h3><span>Old Testament</span></div>
+    <div class="book"><h3>Proverbs</h3><span>Old Testament</span></div>
+    <div class="book"><h3>Matthew</h3><span>New Testament</span></div>
+    <div class="book"><h3>John</h3><span>New Testament</span></div>
+    <div class="book"><h3>Romans</h3><span>New Testament</span></div>
+    <div class="book"><h3>Revelation</h3><span>New Testament</span></div>
+  </section>
+
+  <!-- READER -->
+  <section class="reader">
+    <h2>Genesis 1:1</h2>
+    <p>
+      In the beginning God created the heaven and the earth.
+    </p>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    Created by <strong>Akin S. Sokpah</strong> • Liberia 🇱🇷 <br>
+    Offline Holy Bible Project • 2026
+  </footer>
+
+  <!-- SCRIPT -->
+  <script>
+    function toggleMode() {
+      document.body.classList.toggle("light");
+    }
+  </script>
+
+</body>
+</html>
