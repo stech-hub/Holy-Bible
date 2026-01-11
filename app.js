@@ -5,71 +5,63 @@
    ============================================================ */
 
 /* ============================================================
-   GLOBAL STATE
+   GLOBAL APPLICATION STATE
    ============================================================ */
 
 const AppState = {
   currentBook: null,
   currentChapter: null,
   currentVerse: null,
-  theme: "dark", // dark | light
-  lastRead: null
+  theme: "dark"
 };
 
 /* ============================================================
-   DOM ELEMENT REFERENCES
+   DOM REFERENCES
    ============================================================ */
 
 const DOM = {
   bookGrid: document.querySelector(".book-grid"),
   reader: document.querySelector(".reader"),
   searchInput: document.querySelector(".search-area input"),
-  header: document.querySelector("header"),
+  modeToggle: document.querySelector(".mode-toggle")
 };
 
 /* ============================================================
-   INITIALIZATION
+   APPLICATION INIT
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
-  loadThemeFromStorage();
-  renderBooks();
-  restoreLastRead();
-  attachSearchHandler();
+  initializeTheme();
+  renderAllBooks();
+  restoreLastSession();
+  attachSearch();
 });
 
 /* ============================================================
-   THEME MANAGEMENT
+   THEME SYSTEM (DARK / LIGHT)
    ============================================================ */
 
+function initializeTheme() {
+  const saved = localStorage.getItem("bible_theme");
+  if (saved === "light") {
+    document.body.classList.add("light");
+    AppState.theme = "light";
+  }
+}
+
 function toggleTheme() {
-  if (document.body.classList.contains("light")) {
-    document.body.classList.remove("light");
-    AppState.theme = "dark";
-  } else {
-    document.body.classList.add("light");
-    AppState.theme = "light";
-  }
-  saveThemeToStorage();
-}
-
-function saveThemeToStorage() {
+  document.body.classList.toggle("light");
+  AppState.theme = document.body.classList.contains("light")
+    ? "light"
+    : "dark";
   localStorage.setItem("bible_theme", AppState.theme);
-}
-
-function loadThemeFromStorage() {
-  const savedTheme = localStorage.getItem("bible_theme");
-  if (savedTheme === "light") {
-    document.body.classList.add("light");
-    AppState.theme = "light";
-  }
 }
 
 /* ============================================================
    BOOK RENDERING
    ============================================================ */
 
-function renderBooks() {
+function renderAllBooks() {
   if (!DOM.bookGrid) return;
 
   DOM.bookGrid.innerHTML = "";
@@ -77,67 +69,50 @@ function renderBooks() {
   const oldTestament = BIBLE_BOOKS.filter(b => b.testament === "OT");
   const newTestament = BIBLE_BOOKS.filter(b => b.testament === "NT");
 
-  renderTestamentHeader("Old Testament");
-  oldTestament.forEach(book => renderBookCard(book));
-
-  renderTestamentHeader("New Testament");
-  newTestament.forEach(book => renderBookCard(book));
+  renderTestament("Old Testament", oldTestament);
+  renderTestament("New Testament", newTestament);
 }
 
-function renderTestamentHeader(title) {
+function renderTestament(title, books) {
   const header = document.createElement("div");
-  header.className = "testament-header";
+  header.style.gridColumn = "1 / -1";
   header.innerHTML = `
     <h2 style="
-      grid-column: 1 / -1;
-      margin: 20px 0 10px;
-      color: #d4af37;
-      text-align: center;
-      letter-spacing: 2px;
+      text-align:center;
+      color:#d4af37;
+      letter-spacing:2px;
+      margin:20px 0 10px;
     ">${title}</h2>
   `;
   DOM.bookGrid.appendChild(header);
-}
 
-function renderBookCard(book) {
-  const card = document.createElement("div");
-  card.className = "book";
-
-  card.innerHTML = `
-    <h3>${book.name}</h3>
-    <span>${book.testament === "OT" ? "Old Testament" : "New Testament"}</span>
-  `;
-
-  card.addEventListener("click", () => {
-    selectBook(book);
+  books.forEach(book => {
+    const card = document.createElement("div");
+    card.className = "book";
+    card.innerHTML = `
+      <h3>${book.name}</h3>
+      <span>${book.chapters} chapters</span>
+    `;
+    card.onclick = () => selectBook(book);
+    DOM.bookGrid.appendChild(card);
   });
-
-  DOM.bookGrid.appendChild(card);
 }
 
 /* ============================================================
-   BOOK SELECTION
+   BOOK & CHAPTER FLOW
    ============================================================ */
 
 function selectBook(book) {
   AppState.currentBook = book;
   AppState.currentChapter = 1;
-  AppState.currentVerse = null;
-
-  saveLastRead();
-  renderChapterView(book);
+  saveSession();
+  renderChapterSelector(book);
 }
 
-/* ============================================================
-   CHAPTER VIEW
-   ============================================================ */
-
-function renderChapterView(book) {
-  if (!DOM.reader) return;
-
+function renderChapterSelector(book) {
   DOM.reader.innerHTML = `
     <h2>${book.name}</h2>
-    <p style="opacity:0.7;">Select a chapter</p>
+    <p style="opacity:0.7">Select a chapter</p>
     <div class="chapter-grid"></div>
   `;
 
@@ -145,93 +120,61 @@ function renderChapterView(book) {
   grid.style.display = "grid";
   grid.style.gridTemplateColumns = "repeat(auto-fit, minmax(60px, 1fr))";
   grid.style.gap = "10px";
-  grid.style.marginTop = "14px";
+  grid.style.marginTop = "15px";
 
   for (let i = 1; i <= book.chapters; i++) {
     const btn = document.createElement("button");
     btn.textContent = i;
     btn.style.padding = "10px";
     btn.style.borderRadius = "10px";
-    btn.style.border = "1px solid rgba(212,175,55,0.4)";
+    btn.style.border = "1px solid rgba(212,175,55,0.5)";
     btn.style.background = "transparent";
     btn.style.color = "#d4af37";
-    btn.style.cursor = "pointer";
-
-    btn.addEventListener("click", () => {
-      selectChapter(i);
-    });
-
+    btn.onclick = () => selectChapter(i);
     grid.appendChild(btn);
   }
 }
 
-/* ============================================================
-   CHAPTER SELECTION
-   ============================================================ */
-
 function selectChapter(chapter) {
   AppState.currentChapter = chapter;
-  AppState.currentVerse = null;
-
-  saveLastRead();
-  renderVerseView();
+  saveSession();
+  renderChapterVerses(
+    AppState.currentBook.name,
+    AppState.currentChapter
+  );
 }
 
 /* ============================================================
-   VERSE VIEW (PLACEHOLDER – DATA COMING NEXT)
+   SEARCH SYSTEM
    ============================================================ */
 
-function renderVerseView() {
-  if (!DOM.reader) return;
-
-  const book = AppState.currentBook;
-  const chapter = AppState.currentChapter;
-
-  DOM.reader.innerHTML = `
-    <h2>${book.name} ${chapter}</h2>
-    <p style="opacity:0.8;">
-      Verse content will load here.<br><br>
-      📌 Next step: attach full offline verse data (JSON per book).
-    </p>
-  `;
-}
-
-/* ============================================================
-   SEARCH (BOOK LEVEL FOR NOW)
-   ============================================================ */
-
-function attachSearchHandler() {
+function attachSearch() {
   if (!DOM.searchInput) return;
 
-  DOM.searchInput.addEventListener("input", (e) => {
-    const value = e.target.value.toLowerCase();
-    filterBooks(value);
-  });
-}
-
-function filterBooks(query) {
-  const cards = document.querySelectorAll(".book");
-  cards.forEach(card => {
-    const text = card.innerText.toLowerCase();
-    card.style.display = text.includes(query) ? "block" : "none";
+  DOM.searchInput.addEventListener("input", e => {
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll(".book").forEach(card => {
+      card.style.display = card.innerText.toLowerCase().includes(q)
+        ? "block"
+        : "none";
+    });
   });
 }
 
 /* ============================================================
-   OFFLINE LAST READ STORAGE
+   OFFLINE SESSION STORAGE
    ============================================================ */
 
-function saveLastRead() {
+function saveSession() {
   const data = {
     book: AppState.currentBook?.name || null,
-    chapter: AppState.currentChapter,
-    verse: AppState.currentVerse
+    chapter: AppState.currentChapter
   };
-  localStorage.setItem("bible_last_read", JSON.stringify(data));
+  localStorage.setItem("bible_session", JSON.stringify(data));
 }
 
-function restoreLastRead() {
-  const raw = localStorage.getItem("bible_last_read");
+function restoreLastSession() {
+  const raw = localStorage.getItem("bible_session");
   if (!raw) return;
 
   try {
@@ -240,27 +183,19 @@ function restoreLastRead() {
     if (book) {
       AppState.currentBook = book;
       AppState.currentChapter = data.chapter || 1;
-      renderVerseView();
+      renderChapterVerses(book.name, AppState.currentChapter);
     }
-  } catch (e) {
-    console.warn("Failed to restore last read position.");
+  } catch {
+    console.warn("Session restore failed");
   }
 }
 
 /* ============================================================
-   UTILITIES (EXPANDABLE SECTION)
+   GLOBAL CONTROLS (EXPOSED)
    ============================================================ */
 
-// Future:
-// - highlightVerse()
-// - bookmarkVerse()
-// - addNotes()
-// - fontSizeControl()
-// - audioBible()
-// - PWA support
-// - verse sharing
-// - daily verse
+window.toggleTheme = toggleTheme;
 
 /* ============================================================
-   END OF CORE ENGINE
+   END OF FILE
    ============================================================ */
